@@ -11,10 +11,10 @@
   <meta name="apple-mobile-web-app-title" content="CUORE MEASURES">
   <meta name="theme-color" content="#ffffff">
   
-  <!-- Icono de la App -->
-  <link rel="apple-touch-icon" href="icon.png">
-  <link rel="icon" type="image/png" href="icon.png">
-  <link rel="manifest" href="manifest.json">
+  <!-- Icono de la App (se añade ?v=1.0.1 para forzar descarga si cambias iconos) -->
+  <link rel="apple-touch-icon" href="icon.png?v=1.0.1">
+  <link rel="icon" type="image/png" href="icon.png?v=1.0.1">
+  <link rel="manifest" href="manifest.json?v=1.0.1">
   
   <style>
     :root {
@@ -359,14 +359,14 @@
 
   <!-- SPLASH SCREEN CON splash-logo.png -->
   <div id="splashScreen" onclick="dismissSplash()">
-    <img src="splash-logo.png" alt="Splash Logo" class="animate-heartbeat">
+    <img src="splash-logo.png?v=1.0.1" alt="Splash Logo" class="animate-heartbeat">
   </div>
 
   <!-- ENCABEZADO CON LOGO BLANCO SOBRE FONDO AZUL TRANSPARENTE -->
   <header>
     <div class="header-container">
       <div class="brand">
-        <img src="header-logo.png" alt="Header Logo" class="header-logo-img">
+        <img src="header-logo.png?v=1.0.1" alt="Header Logo" class="header-logo-img">
         <div>
           <h1 style="font-size: 1.1rem; font-weight: 700;">CUORE MEASURES</h1>
           <p style="font-size: 0.75rem; opacity: 0.9;">Modo M en ecocardiografía canina</p>
@@ -632,20 +632,58 @@
       }
     }
 
+    /* CONFIGURACIÓN MEJORADA DE SERVICE WORKER CON NETWORK-FIRST */
     function setupPWA() {
       if ('serviceWorker' in navigator) {
+        // Incrementa esta versión en cada despliegue para limpiar automáticamente la caché previa
+        const CACHE_NAME = 'modom-vet-cache-v15';
+        
         const swCode = `
-          const CACHE_NAME = 'modom-vet-cache-v14';
-          self.addEventListener('install', e => self.skipWaiting());
-          self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+          const CACHE_NAME = '${CACHE_NAME}';
+
+          self.addEventListener('install', e => {
+            self.skipWaiting();
+          });
+
+          self.addEventListener('activate', e => {
+            e.waitUntil(
+              caches.keys().then(keys => {
+                return Promise.all(
+                  keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+                );
+              }).then(() => self.clients.claim())
+            );
+          });
+
+          // Estrategia Network-First: Busca actualizaciones primero en internet. 
+          // Si no hay red, carga desde la caché (Offline).
           self.addEventListener('fetch', e => {
             e.respondWith(
-              caches.match(e.request).then(res => res || fetch(e.request))
+              fetch(e.request)
+                .then(networkResponse => {
+                  if (networkResponse && networkResponse.status === 200) {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(e.request, responseClone));
+                  }
+                  return networkResponse;
+                })
+                .catch(() => caches.match(e.request))
             );
           });
         `;
+
         const swBlob = new Blob([swCode], { type: 'text/javascript' });
         const swURL = URL.callObjectURL(swBlob);
+
+        // Recarga la vista automáticamente al activarse un nuevo controlador
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+
         navigator.serviceWorker.register(swURL).catch(err => console.error(err));
       }
     }
