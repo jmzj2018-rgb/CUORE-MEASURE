@@ -49,29 +49,34 @@
       padding-bottom: max(0px, var(--sab));
     }
 
-    /* --- SPLASH SCREEN BLANCO --- */
+    /* --- NUEVA INTERACCIÓN Y NATIVIDAD DEL SPLASH SCREEN --- */
     #splashScreen {
       position: fixed;
       inset: 0;
       z-index: 9999;
       background-color: #ffffff;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.6s ease, visibility 0.6s ease;
-      cursor: pointer;
+      /* Muestra 0.8s estático + 0.4s de desvanecimiento automático sin esperar toques */
+      animation: splashAutoDismiss 0.4s ease-out 0.8s forwards;
     }
 
-    #splashScreen.splash-fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+    @keyframes splashAutoDismiss {
+      0% {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      100% {
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+      }
     }
 
     @keyframes heartbeat {
       0% { transform: scale(1); }
-      14% { transform: scale(1.18); }
+      14% { transform: scale(1.15); }
       28% { transform: scale(1); }
       42% { transform: scale(1.12); }
       70% { transform: scale(1); }
@@ -79,7 +84,7 @@
     }
 
     .animate-heartbeat {
-      animation: heartbeat 0.8s infinite ease-in-out;
+      animation: heartbeat 0.75s infinite ease-in-out;
       transform-origin: center;
       width: 130px;
       height: 130px;
@@ -111,7 +116,6 @@
       gap: 12px;
     }
 
-    /* Estilo del logo transparente en el header */
     .header-logo-img {
       width: 38px;
       height: 38px;
@@ -315,7 +319,6 @@
     .bg-decreased { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
     .bg-increased { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-    /* ESTILO PARA RANGO EN UNA SOLA LÍNEA */
     .single-line-ref {
       margin-top: 10px;
       padding-top: 10px;
@@ -358,12 +361,12 @@
 </head>
 <body>
 
-  <!-- SPLASH SCREEN CON splash-logo.png -->
-  <div id="splashScreen" onclick="dismissSplash()">
+  <!-- SPLASH SCREEN REESTRUCTURADO SIN EVENTOS DE TAP -->
+  <div id="splashScreen">
     <img id="splashImg" data-src="splash-logo.png" alt="Splash Logo" class="animate-heartbeat">
   </div>
 
-  <!-- ENCABEZADO CON LOGO SVG BLANCO INLINE -->
+  <!-- ENCABEZADO -->
   <header>
     <div class="header-container">
       <div class="brand">
@@ -384,7 +387,6 @@
 
   <!-- CONTENIDO PRINCIPAL -->
   <main>
-
     <!-- PESO GLOBAL -->
     <div class="card">
       <div class="label-title">Peso del Paciente (Kg)</div>
@@ -440,7 +442,6 @@
         <span class="input-unit">cm</span>
       </div>
 
-      <!-- CAJA DE RESULTADO -->
       <div id="normResultCard" class="result-box">
         <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Resultado Normalizado</div>
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px;">
@@ -448,7 +449,6 @@
           <div id="normStatusBadge" class="status-badge" style="background: #e2e8f0; color: #475569;">Ingrese datos</div>
         </div>
         
-        <!-- Fila de Rango de Referencia Forzada a 1 Línea -->
         <div class="single-line-ref">
           <span id="normAuthorLabel">Ref:</span>
           <strong id="normRefRange" style="color: var(--text); font-size: 0.8rem; margin-left: 6px;">--</strong>
@@ -489,10 +489,7 @@
   </div>
 
   <script>
-    // ==========================================
-    // CAMBIA ESTE NÚMERO CADA VEZ QUE HAGAS CAMBIOS
-    // ==========================================
-    const APP_VERSION = '1.0.7';
+    const APP_VERSION = '1.0.6';
 
     const absoluteCoeffs = [
       { name: 'IVSd',   a: 0.29, b: 0.59, c: 0.241 },
@@ -511,7 +508,6 @@
     };
 
     let selectedNormKey = 'nLA';
-    let splashDismissed = false;
 
     document.addEventListener('DOMContentLoaded', () => {
       applyDynamicVersion();
@@ -519,16 +515,10 @@
       setupPWA();
       detectDeviceOS();
       calculateNormalization();
-
-      // Transcurrido 1 segundo (1000 ms), oculta el splash de forma automática
-      setTimeout(() => {
-        dismissSplash();
-      }, 1000);
+      setupSplashCleanup();
     });
 
-    // Añade el tag ?v=APP_VERSION automáticamente a enlaces e imágenes
     function applyDynamicVersion() {
-      // Iconos en <head>
       ['appleTouchIcon', 'favicon', 'manifestLink'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -537,22 +527,19 @@
         }
       });
 
-      // Imágenes con data-src
       document.querySelectorAll('img[data-src]').forEach(img => {
         const basePath = img.getAttribute('data-src');
         img.src = `${basePath}?v=${APP_VERSION}`;
       });
     }
 
-    function dismissSplash() {
-      if (splashDismissed) return;
-      splashDismissed = true;
+    /* ELIMINA EL ELEMENTO DEL DOM AL TERMINAR LA ANIMACIÓN CSS */
+    function setupSplashCleanup() {
       const splash = document.getElementById('splashScreen');
       if (splash) {
-        splash.classList.add('splash-fade-out');
-        setTimeout(() => {
-          splash.style.display = 'none';
-        }, 600);
+        splash.addEventListener('animationend', () => {
+          splash.remove();
+        });
       }
     }
 
@@ -663,7 +650,6 @@
       }
     }
 
-    /* CONFIGURACIÓN VINCULADA A APP_VERSION */
     function setupPWA() {
       if ('serviceWorker' in navigator) {
         const CACHE_NAME = `modom-vet-cache-v-${APP_VERSION}`;
