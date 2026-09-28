@@ -11,10 +11,10 @@
   <meta name="apple-mobile-web-app-title" content="CUORE MEASURES">
   <meta name="theme-color" content="#ffffff">
   
-  <!-- Icono de la App (se añade ?v=1.0.1 para forzar descarga si cambias iconos) -->
-  <link rel="apple-touch-icon" href="icon.png?v=1.0.1">
-  <link rel="icon" type="image/png" href="icon.png?v=1.0.1">
-  <link rel="manifest" href="manifest.json?v=1.0.1">
+  <!-- Iconos PWA dinámicos por script -->
+  <link id="appleTouchIcon" rel="apple-touch-icon" href="icon.png">
+  <link id="favicon" rel="icon" type="image/png" href="icon.png">
+  <link id="manifestLink" rel="manifest" href="manifest.json">
   
   <style>
     :root {
@@ -359,14 +359,14 @@
 
   <!-- SPLASH SCREEN CON splash-logo.png -->
   <div id="splashScreen" onclick="dismissSplash()">
-    <img src="splash-logo.png?v=1.0.1" alt="Splash Logo" class="animate-heartbeat">
+    <img id="splashImg" data-src="splash-logo.png" alt="Splash Logo" class="animate-heartbeat">
   </div>
 
   <!-- ENCABEZADO CON LOGO BLANCO SOBRE FONDO AZUL TRANSPARENTE -->
   <header>
     <div class="header-container">
       <div class="brand">
-        <img src="header-logo.png?v=1.0.1" alt="Header Logo" class="header-logo-img">
+        <img id="headerLogoImg" data-src="header-logo.png" alt="Header Logo" class="header-logo-img">
         <div>
           <h1 style="font-size: 1.1rem; font-weight: 700;">CUORE MEASURES</h1>
           <p style="font-size: 0.75rem; opacity: 0.9;">Modo M en ecocardiografía canina</p>
@@ -485,6 +485,11 @@
   </div>
 
   <script>
+    // ==========================================
+    // CAMBIA ESTE NÚMERO CADA VEZ QUE HAGAS CAMBIOS
+    // ==========================================
+    const APP_VERSION = '1.0.2';
+
     const absoluteCoeffs = [
       { name: 'IVSd',   a: 0.29, b: 0.59, c: 0.241 },
       { name: 'LVIDd',  a: 1.27, b: 1.85, c: 0.294 },
@@ -505,6 +510,7 @@
     let splashDismissed = false;
 
     document.addEventListener('DOMContentLoaded', () => {
+      applyDynamicVersion();
       renderAbsoluteTable();
       setupPWA();
       detectDeviceOS();
@@ -514,6 +520,24 @@
         dismissSplash();
       }, 2100);
     });
+
+    // Añade el tag ?v=APP_VERSION automáticamente a enlaces e imágenes
+    function applyDynamicVersion() {
+      // Iconos en <head>
+      ['appleTouchIcon', 'favicon', 'manifestLink'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          const basePath = el.getAttribute('href').split('?')[0];
+          el.setAttribute('href', `${basePath}?v=${APP_VERSION}`);
+        }
+      });
+
+      // Imágenes con data-src
+      document.querySelectorAll('img[data-src]').forEach(img => {
+        const basePath = img.getAttribute('data-src');
+        img.src = `${basePath}?v=${APP_VERSION}`;
+      });
+    }
 
     function dismissSplash() {
       if (splashDismissed) return;
@@ -632,11 +656,10 @@
       }
     }
 
-    /* CONFIGURACIÓN MEJORADA DE SERVICE WORKER CON NETWORK-FIRST */
+    /* CONFIGURACIÓN VINCULADA A APP_VERSION */
     function setupPWA() {
       if ('serviceWorker' in navigator) {
-        // Incrementa esta versión en cada despliegue para limpiar automáticamente la caché previa
-        const CACHE_NAME = 'modom-vet-cache-v15';
+        const CACHE_NAME = `modom-vet-cache-v-${APP_VERSION}`;
         
         const swCode = `
           const CACHE_NAME = '${CACHE_NAME}';
@@ -655,8 +678,6 @@
             );
           });
 
-          // Estrategia Network-First: Busca actualizaciones primero en internet. 
-          // Si no hay red, carga desde la caché (Offline).
           self.addEventListener('fetch', e => {
             e.respondWith(
               fetch(e.request)
@@ -675,7 +696,6 @@
         const swBlob = new Blob([swCode], { type: 'text/javascript' });
         const swURL = URL.callObjectURL(swBlob);
 
-        // Recarga la vista automáticamente al activarse un nuevo controlador
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (!refreshing) {
