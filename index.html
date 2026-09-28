@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="CUORE MEASURES">
   <meta name="theme-color" content="#ffffff">
   
-  <!-- Icono de la App (Pantalla de inicio e icono del navegador) -->
+  <!-- Icono de la App -->
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="manifest" href="manifest.json">
@@ -110,21 +110,12 @@
       gap: 12px;
     }
 
-    .logo-box {
-      background: white;
-      padding: 3px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-    }
-
-    .logo-box img {
-      width: 100%;
-      height: 100%;
+    /* Estilo del logo transparente en el header */
+    .header-logo-img {
+      width: 38px;
+      height: 38px;
       object-fit: contain;
+      background: transparent;
     }
 
     .install-btn {
@@ -371,13 +362,11 @@
     <img src="splash-logo.png" alt="Splash Logo" class="animate-heartbeat">
   </div>
 
-  <!-- ENCABEZADO CON header-logo.png -->
+  <!-- ENCABEZADO CON LOGO BLANCO SOBRE FONDO AZUL TRANSPARENTE -->
   <header>
     <div class="header-container">
       <div class="brand">
-        <div class="logo-box">
-          <img src="header-logo.png" alt="Header Logo">
-        </div>
+        <img src="header-logo.png" alt="Header Logo" class="header-logo-img">
         <div>
           <h1 style="font-size: 1.1rem; font-weight: 700;">CUORE MEASURES</h1>
           <p style="font-size: 0.75rem; opacity: 0.9;">Modo M en ecocardiografía canina</p>
@@ -646,7 +635,7 @@
     function setupPWA() {
       if ('serviceWorker' in navigator) {
         const swCode = `
-          const CACHE_NAME = 'modom-vet-cache-v13';
+          const CACHE_NAME = 'modom-vet-cache-v14';
           self.addEventListener('install', e => self.skipWaiting());
           self.addEventListener('activate', e => e.waitUntil(clients.claim()));
           self.addEventListener('fetch', e => {
