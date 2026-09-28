@@ -492,7 +492,7 @@
 
       <div class="label-title">Parámetro a normalizar (en cm)</div>
       <div class="input-wrapper">
-        <input type="number" id="measuredX" step="0.01" min="0" placeholder="Ej. 2.45" oninput="calculateNormalization()">
+        <input type="number" id="measuredX" step="0.01" min="0" placeholder="Ej. 2.45" oninput="onMeasuredInput(this.value)">
         <span class="input-unit">cm</span>
       </div>
 
@@ -565,7 +565,7 @@
   </div>
 
   <script>
-    const APP_VERSION = '1.1.3';
+    const APP_VERSION = '1.1.4';
 
     const absoluteCoeffs = [
       { name: 'IVSd',   a: 0.29, b: 0.59, c: 0.241 },
@@ -584,6 +584,13 @@
     };
 
     let selectedNormKey = 'nLA';
+
+    // Memoria independiente para los datos introducidos en cada parámetro normalizado
+    const normValuesMemory = {
+      nLA: '',
+      nLVIDd: '',
+      nLVIDs: ''
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
       applyDynamicVersion();
@@ -623,6 +630,13 @@
       }
     }
 
+    function resetNormMemory() {
+      normValuesMemory.nLA = '';
+      normValuesMemory.nLVIDd = '';
+      normValuesMemory.nLVIDs = '';
+      document.getElementById('measuredX').value = '';
+    }
+
     function switchTab(tab) {
       const tabRanges = document.getElementById('tabRanges');
       const tabNorm = document.getElementById('tabNormalized');
@@ -634,11 +648,18 @@
         tabNorm.classList.add('hidden');
         btnRanges.classList.add('active');
         btnNorm.classList.remove('active');
+
+        // Al cambiar a la pestaña de "Rangos Absolutos", se borran las memorias
+        resetNormMemory();
       } else {
         tabRanges.classList.add('hidden');
         tabNorm.classList.remove('hidden');
         btnNorm.classList.add('active');
         btnRanges.classList.remove('active');
+
+        // Carga la medida correspondiente al parámetro activo
+        document.getElementById('measuredX').value = normValuesMemory[selectedNormKey];
+        calculateNormalization();
       }
     }
 
@@ -686,6 +707,15 @@
       selectedNormKey = key;
       document.querySelectorAll('.norm-param-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById(`btn-${key}`).classList.add('active');
+
+      // Recupera el valor asignado a la nueva pestaña o lo deja vacío
+      document.getElementById('measuredX').value = normValuesMemory[selectedNormKey];
+      calculateNormalization();
+    }
+
+    function onMeasuredInput(value) {
+      // Guarda la medición ingresada en la memoria del parámetro actualmente activo
+      normValuesMemory[selectedNormKey] = value;
       calculateNormalization();
     }
 
@@ -781,14 +811,12 @@
       }
     }
 
-    /* DETECCIÓN AJUSTADA Y PRECISA DE ESTADO APPLICACIÓN */
+    /* DETECCIÓN AJUSTADA Y PRECISA DE ESTADO APLICACIÓN */
     function detectDeviceOS() {
-      // Detección estricta de Standalone
       const isStandaloneMedia = window.matchMedia('(display-mode: standalone)').matches;
       const isIosStandalone = window.navigator.standalone === true;
       const isAndroidTwa = document.referrer.startsWith('android-app://');
 
-      // iOS PWA abierta como App (no navegador Safari)
       const ua = window.navigator.userAgent || window.navigator.vendor || '';
       const isIosApp = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
 
@@ -806,7 +834,6 @@
         }
       }
 
-      // Pre-selección de pestaña según el SO dentro del modal
       if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
         switchOsTab('ios');
       } else {
