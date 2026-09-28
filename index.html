@@ -49,6 +49,17 @@
       padding-bottom: max(0px, var(--sab));
     }
 
+    /* --- OCULTACIÓN DE BOTÓN INSTALAR EN MODO PWA/STANDALONE --- */
+    @media all and (display-mode: standalone) {
+      #installBtn { display: none !important; }
+    }
+    @media all and (display-mode: fullscreen) {
+      #installBtn { display: none !important; }
+    }
+    @media all and (display-mode: minimal-ui) {
+      #installBtn { display: none !important; }
+    }
+
     /* --- SPLASH SCREEN --- */
     #splashScreen {
       position: fixed;
@@ -560,7 +571,7 @@
   </div>
 
   <script>
-    const APP_VERSION = '1.1.1';
+    const APP_VERSION = '1.1.2';
 
     const absoluteCoeffs = [
       { name: 'IVSd',   a: 0.29, b: 0.59, c: 0.241 },
@@ -580,6 +591,9 @@
 
     let selectedNormKey = 'nLA';
 
+    // Ejecución inmediata de la detección al interpretar el script
+    detectDeviceOS();
+
     document.addEventListener('DOMContentLoaded', () => {
       applyDynamicVersion();
       renderAbsoluteTable();
@@ -588,6 +602,11 @@
       calculateNormalization();
       setupSplashCleanup();
       listenAppInstallEvent();
+    });
+
+    // Forzar re-detección si la app vuelve de segundo plano (muy común en iOS Safari)
+    window.addEventListener('pageshow', () => {
+      detectDeviceOS();
     });
 
     function applyDynamicVersion() {
@@ -772,37 +791,51 @@
       }
     }
 
-    /* DETECCIÓN REFORZADA DE MODO STANDALONE Y ESTADO DE INSTALACIÓN */
+    /* DETECCIÓN AVANZADA MULTINAVEGADOR / MULTIOS */
     function detectDeviceOS() {
-      const isStandalone = 
-        window.matchMedia('(display-mode: standalone)').matches || 
-        window.navigator.standalone === true ||
-        document.referrer.includes('android-app://') ||
-        localStorage.getItem('pwaInstalled') === 'true';
+      const isStandaloneMatch = window.matchMedia('(display-mode: standalone)').matches 
+                             || window.matchMedia('(display-mode: fullscreen)').matches
+                             || window.matchMedia('(display-mode: minimal-ui)').matches;
+      
+      const isIosStandalone = window.navigator.standalone === true;
+      const isAndroidTwa = document.referrer.startsWith('android-app://');
+
+      // iOS PWA: cuando la PWA corre añadida al inicio, el userAgent contiene Mobile/ pero omite "Safari"
+      const ua = window.navigator.userAgent || window.navigator.vendor || '';
+      const isIosApp = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
+
+      const isApp = isStandaloneMatch || isIosStandalone || isAndroidTwa || isIosApp;
 
       const installBtn = document.getElementById('installBtn');
 
-      if (isStandalone) {
-        if (installBtn) installBtn.classList.add('hidden');
+      if (isApp) {
+        if (installBtn) {
+          installBtn.style.display = 'none';
+          installBtn.classList.add('hidden');
+        }
       } else {
-        if (installBtn) installBtn.classList.remove('hidden');
+        if (installBtn) {
+          installBtn.style.display = 'flex';
+          installBtn.classList.remove('hidden');
+        }
       }
 
-      // Pre-selección de la pestaña adecuada dentro del modal
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+      // Pre-selección de pestaña según el SO
+      if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
         switchOsTab('ios');
       } else {
         switchOsTab('android');
       }
     }
 
-    /* ESCUCHADOR PARA DETECTAR LA INSTALACIÓN EN TIEMPO REAL */
     function listenAppInstallEvent() {
       window.addEventListener('appinstalled', () => {
         localStorage.setItem('pwaInstalled', 'true');
         const installBtn = document.getElementById('installBtn');
-        if (installBtn) installBtn.classList.add('hidden');
+        if (installBtn) {
+          installBtn.style.display = 'none';
+          installBtn.classList.add('hidden');
+        }
         closeInstallModal();
       });
     }
