@@ -66,6 +66,7 @@
     #splashScreen.splash-fade-out {
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
     }
 
     @keyframes heartbeat {
@@ -78,7 +79,7 @@
     }
 
     .animate-heartbeat {
-      animation: heartbeat 1.3s infinite ease-in-out;
+      animation: heartbeat 0.8s infinite ease-in-out;
       transform-origin: center;
       width: 130px;
       height: 130px;
@@ -362,7 +363,7 @@
     <img id="splashImg" data-src="splash-logo.png" alt="Splash Logo" class="animate-heartbeat">
   </div>
 
-<!-- ENCABEZADO CON LOGO SVG BLANCO INLINE -->
+  <!-- ENCABEZADO CON LOGO SVG BLANCO INLINE -->
   <header>
     <div class="header-container">
       <div class="brand">
@@ -491,7 +492,7 @@
     // ==========================================
     // CAMBIA ESTE NÚMERO CADA VEZ QUE HAGAS CAMBIOS
     // ==========================================
-    const APP_VERSION = '1.0.4';
+    const APP_VERSION = '1.0.6';
 
     const absoluteCoeffs = [
       { name: 'IVSd',   a: 0.29, b: 0.59, c: 0.241 },
@@ -519,9 +520,10 @@
       detectDeviceOS();
       calculateNormalization();
 
+      // Transcurrido 1 segundo (1000 ms), oculta el splash de forma automática
       setTimeout(() => {
-  dismissSplash();
-}, 2100);
+        dismissSplash();
+      }, 1000);
     });
 
     // Añade el tag ?v=APP_VERSION automáticamente a enlaces e imágenes
@@ -548,7 +550,9 @@
       const splash = document.getElementById('splashScreen');
       if (splash) {
         splash.classList.add('splash-fade-out');
-        setTimeout(() => splash.style.display = 'none', 600);
+        setTimeout(() => {
+          splash.style.display = 'none';
+        }, 600);
       }
     }
 
