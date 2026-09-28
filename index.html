@@ -16,10 +16,6 @@
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="manifest" href="manifest.json">
   
-  <!-- Custom Heart SVG Icon Data URI -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'><rect width='400' height='400' rx='80' fill='%23ffffff'/><path d='M200,340 L70,210 C15,155 45,65 125,65 C165,65 188,88 200,105 C212,88 235,65 275,65 C355,65 385,155 330,210 L200,340 Z' fill='none' stroke='%2300a0e9' stroke-width='38' stroke-linejoin='round'/><path d='M135,185 L190,240 L285,135' fill='none' stroke='%23e52335' stroke-width='38' stroke-linecap='round' stroke-linejoin='round'/></svg>">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'><rect width='400' height='400' rx='80' fill='%23ffffff'/><path d='M200,340 L70,210 C15,155 45,65 125,65 C165,65 188,88 200,105 C212,88 235,65 275,65 C355,65 385,155 330,210 L200,340 Z' fill='none' stroke='%2300a0e9' stroke-width='38' stroke-linejoin='round'/><path d='M135,185 L190,240 L285,135' fill='none' stroke='%23e52335' stroke-width='38' stroke-linecap='round' stroke-linejoin='round'/></svg>">
-  
   <style>
     :root {
       --primary: #0284c7;
@@ -249,12 +245,12 @@
       color: var(--text-muted);
       font-size: 0.7rem;
       text-transform: uppercase;
-      padding: 10px 8px;
+      padding: 12px 16px;
       text-align: center;
     }
 
     td {
-      padding: 10px 8px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border);
     }
 
@@ -402,7 +398,7 @@
     </div>
 
     <!-- TAB 1: RANGOS ABSOLUTOS -->
-   <section id="tabRanges" class="card" style="padding: 0; overflow: hidden;">
+    <section id="tabRanges" class="card" style="padding: 0; overflow: hidden;">
       <div style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Formulas de Cornell, et al (2008)</span>
         <span id="weightBadge" class="badge-weight">Sin Peso</span>
@@ -413,19 +409,6 @@
             <tr>
               <th style="text-align: left;">Parámetro</th>
               <th style="text-align: center;">Rango Ref. (cm)</th>
-            </tr>
-          </thead>
-          <tbody id="absoluteRangesBody"></tbody>
-        </table>
-      </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th style="text-align: left;">Parámetro</th>
-              <th>Inf (a)</th>
-              <th>Sup (b)</th>
-              <th>Rango Ref. (cm)</th>
             </tr>
           </thead>
           <tbody id="absoluteRangesBody"></tbody>
@@ -505,13 +488,13 @@
 
   <script>
     const absoluteCoeffs = [
-      { name: 'IVSd',     a: 0.29, b: 0.59, c: 0.241 },
-      { name: 'LVIDd',    a: 1.27, b: 1.85, c: 0.294 },
-      { name: 'LVPWd',    a: 0.29, b: 0.60, c: 0.232 },
-      { name: 'IVSs',     a: 0.43, b: 0.79, c: 0.240 },
-      { name: 'LVIDs',    a: 0.71, b: 1.26, c: 0.315 },
-      { name: 'LVPWs',    a: 0.48, b: 0.87, c: 0.222 },
-      { name: 'LA (Sx)',  a: 0.59, b: 0.97, c: 0.345 }
+      { name: 'IVSd',   a: 0.29, b: 0.59, c: 0.241 },
+      { name: 'LVIDd',  a: 1.27, b: 1.85, c: 0.294 },
+      { name: 'LVPWd',  a: 0.29, b: 0.60, c: 0.232 },
+      { name: 'IVSs',   a: 0.43, b: 0.79, c: 0.240 },
+      { name: 'LVIDs',  a: 0.71, b: 1.26, c: 0.315 },
+      { name: 'LVPWs',  a: 0.48, b: 0.87, c: 0.222 },
+      { name: 'LA (Sx)', a: 0.59, b: 0.97, c: 0.345 }
     ];
 
     const normalizedCoeffs = {
@@ -651,7 +634,7 @@
     function setupPWA() {
       if ('serviceWorker' in navigator) {
         const swCode = `
-          const CACHE_NAME = 'modom-vet-cache-v4';
+          const CACHE_NAME = 'modom-vet-cache-v8';
           self.addEventListener('install', e => self.skipWaiting());
           self.addEventListener('activate', e => e.waitUntil(clients.claim()));
           self.addEventListener('fetch', e => {
