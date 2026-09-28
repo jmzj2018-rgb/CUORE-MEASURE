@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="CUORE MEASURES">
   <meta name="theme-color" content="#ffffff">
   
-  <!-- Iconos PWA y Favicon -->
+  <!-- Icono de la App (Pantalla de inicio e icono del navegador) -->
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="manifest" href="manifest.json">
@@ -80,8 +80,9 @@
     .animate-heartbeat {
       animation: heartbeat 1.3s infinite ease-in-out;
       transform-origin: center;
-      width: 110px;
-      height: 110px;
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
     }
 
     /* --- HEADER --- */
@@ -111,13 +112,19 @@
 
     .logo-box {
       background: white;
-      padding: 4px;
-      border-radius: 12px;
+      padding: 3px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
+    }
+
+    .logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .install-btn {
@@ -359,29 +366,17 @@
 </head>
 <body>
 
-  <!-- SPLASH SCREEN BLANCO CON LATIDO -->
+  <!-- SPLASH SCREEN CON splash-logo.png -->
   <div id="splashScreen" onclick="dismissSplash()">
-    <div class="animate-heartbeat">
-      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-        <path d="M200,340 L70,210 C15,155 45,65 125,65 C165,65 188,88 200,105 C212,88 235,65 275,65 C355,65 385,155 330,210 L200,340 Z" 
-              fill="none" stroke="#00a0e9" stroke-width="36" stroke-linejoin="round"/>
-        <path d="M135,185 L190,240 L285,135" 
-              fill="none" stroke="#e52335" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+    <img src="splash-logo.png" alt="Splash Logo" class="animate-heartbeat">
   </div>
 
-  <!-- ENCABEZADO -->
+  <!-- ENCABEZADO CON header-logo.png -->
   <header>
     <div class="header-container">
       <div class="brand">
         <div class="logo-box">
-          <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-            <path d="M200,340 L70,210 C15,155 45,65 125,65 C165,65 188,88 200,105 C212,88 235,65 275,65 C355,65 385,155 330,210 L200,340 Z" 
-                  fill="none" stroke="#00a0e9" stroke-width="38" stroke-linejoin="round"/>
-            <path d="M135,185 L190,240 L285,135" 
-                  fill="none" stroke="#e52335" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <img src="header-logo.png" alt="Header Logo">
         </div>
         <div>
           <h1 style="font-size: 1.1rem; font-weight: 700;">CUORE MEASURES</h1>
@@ -617,8 +612,6 @@
 
       const coeffData = normalizedCoeffs[selectedNormKey];
       normRefRange.textContent = `${coeffData.min} - ${coeffData.max}`;
-      
-      // Texto acortado inteligentemente para encajar en 1 sola línea vertical
       normAuthorLabel.textContent = `Ref. ${coeffData.author}:`;
 
       if (isNaN(weight) || weight <= 0 || isNaN(measuredX) || measuredX <= 0) {
@@ -653,7 +646,7 @@
     function setupPWA() {
       if ('serviceWorker' in navigator) {
         const swCode = `
-          const CACHE_NAME = 'modom-vet-cache-v10';
+          const CACHE_NAME = 'modom-vet-cache-v13';
           self.addEventListener('install', e => self.skipWaiting());
           self.addEventListener('activate', e => e.waitUntil(clients.claim()));
           self.addEventListener('fetch', e => {
@@ -663,7 +656,7 @@
           });
         `;
         const swBlob = new Blob([swCode], { type: 'text/javascript' });
-        const swURL = URL.createObjectURL(swBlob);
+        const swURL = URL.callObjectURL(swBlob);
         navigator.serviceWorker.register(swURL).catch(err => console.error(err));
       }
     }
