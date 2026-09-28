@@ -49,7 +49,7 @@
       padding-bottom: max(0px, var(--sab));
     }
 
-    /* --- NUEVA INTERACCIÓN Y NATIVIDAD DEL SPLASH SCREEN --- */
+    /* --- SPLASH SCREEN --- */
     #splashScreen {
       position: fixed;
       inset: 0;
@@ -58,20 +58,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Muestra 0.8s estático + 0.4s de desvanecimiento automático sin esperar toques */
       animation: splashAutoDismiss 0.4s ease-out 0.8s forwards;
     }
 
     @keyframes splashAutoDismiss {
-      0% {
-        opacity: 1;
-        pointer-events: auto;
-      }
-      100% {
-        opacity: 0;
-        pointer-events: none;
-        visibility: hidden;
-      }
+      0% { opacity: 1; pointer-events: auto; }
+      100% { opacity: 0; pointer-events: none; visibility: hidden; }
     }
 
     @keyframes heartbeat {
@@ -124,9 +116,9 @@
     }
 
     .install-btn {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.25);
       color: white;
-      border: none;
+      border: 1px solid rgba(255,255,255,0.4);
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.75rem;
@@ -135,9 +127,14 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      transition: background 0.2s;
     }
 
-    /* --- LAYOUT PRINCIPAL --- */
+    .install-btn:active {
+      background: rgba(255,255,255,0.4);
+    }
+
+    /* --- MAIN LAYOUT --- */
     main {
       max-width: 560px;
       width: 100%;
@@ -333,13 +330,13 @@
       text-overflow: ellipsis;
     }
 
-    /* MODAL */
+    /* --- MODAL DE INSTALACIÓN MEJORADO --- */
     .modal-overlay {
       position: fixed;
       inset: 0;
       background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(2px);
-      z-index: 99;
+      backdrop-filter: blur(4px);
+      z-index: 999;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -352,8 +349,59 @@
       background: white;
       border-radius: 20px;
       padding: 20px;
-      max-width: 400px;
+      max-width: 440px;
       width: 100%;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .os-tabs {
+      display: flex;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+
+    .os-tab-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .os-tab-btn.active {
+      background: #ffffff;
+      color: var(--primary-dark);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .instruction-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .step-number {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 800;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.75rem;
     }
 
     .hidden { display: none !important; }
@@ -361,7 +409,7 @@
 </head>
 <body>
 
-  <!-- SPLASH SCREEN REESTRUCTURADO SIN EVENTOS DE TAP -->
+  <!-- SPLASH SCREEN -->
   <div id="splashScreen">
     <img id="splashImg" data-src="splash-logo.png" alt="Splash Logo" class="animate-heartbeat">
   </div>
@@ -379,8 +427,9 @@
           <p style="font-size: 0.75rem; opacity: 0.9;">Modo M en ecocardiografía canina</p>
         </div>
       </div>
+      <!-- BOTÓN SIEMPRE VISIBLE EN NAVEGADORES WEB -->
       <button id="installBtn" onclick="openInstallModal()" class="install-btn hidden">
-        <span>Instalar App</span>
+        <span>📲 Instalar App</span>
       </button>
     </div>
   </header>
@@ -458,38 +507,60 @@
 
   </main>
 
-  <!-- MODAL DE INSTALACIÓN PWA -->
+  <!-- MODAL DE INSTALACIÓN MULTIPLATAFORMA -->
   <div id="installModal" class="modal-overlay hidden">
     <div class="modal-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 12px;">
-        <h3 style="font-size: 1rem; font-weight: 700;">Instalar App en el Teléfono</h3>
-        <button onclick="closeInstallModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 14px;">
+        <h3 style="font-size: 1rem; font-weight: 700;">Instalar como App Nativa</h3>
+        <button onclick="closeInstallModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">✕</button>
       </div>
 
-      <div id="iosInstructions" style="font-size: 0.85rem; color: var(--text-muted);">
-        <p style="margin-bottom: 8px; font-weight: 600; color: var(--text);">Para iPhone / iPad (Safari):</p>
-        <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
-          <li>Toca el botón <strong>Compartir</strong> (cuadro con flecha hacia arriba).</li>
-          <li>Selecciona <strong>"Agregar a inicio"</strong>.</li>
-        </ol>
+      <!-- Pestañas para elegir SO dentro del Modal -->
+      <div class="os-tabs">
+        <button id="btnTabIos" class="os-tab-btn" onclick="switchOsTab('ios')"> iPhone / iPad</button>
+        <button id="btnTabAndroid" class="os-tab-btn" onclick="switchOsTab('android')">🤖 Android</button>
       </div>
 
-      <div id="androidInstructions" class="hidden" style="font-size: 0.85rem; color: var(--text-muted);">
-        <p style="margin-bottom: 8px; font-weight: 600; color: var(--text);">Para Android (Chrome):</p>
-        <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
-          <li>Toca los tres puntos de opciones arriba a la derecha.</li>
-          <li>Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a pantalla principal"</strong>.</li>
-        </ol>
+      <!-- Instrucciones iOS -->
+      <div id="iosInstructions">
+        <div class="instruction-step">
+          <span class="step-number">1</span>
+          <span>Abre esta página web desde el navegador <strong>Safari</strong>.</span>
+        </div>
+        <div class="instruction-step">
+          <span class="step-number">2</span>
+          <span>Toca el botón <strong>Compartir</strong> <span style="font-size: 1.1rem;">⎋</span> (el cuadrado con la flecha hacia arriba).</span>
+        </div>
+        <div class="instruction-step">
+          <span class="step-number">3</span>
+          <span>Baja en las opciones y selecciona <strong>"Agregar a inicio"</strong> ➕.</span>
+        </div>
       </div>
 
-      <button onclick="closeInstallModal()" style="width: 100%; margin-top: 16px; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">
+      <!-- Instrucciones Android -->
+      <div id="androidInstructions" class="hidden">
+        <div class="instruction-step">
+          <span class="step-number">1</span>
+          <span>Abre esta página desde el navegador <strong>Chrome</strong>.</span>
+        </div>
+        <div class="instruction-step">
+          <span class="step-number">2</span>
+          <span>Toca el menú de los <strong>tres puntos (⋮)</strong> en la esquina superior derecha.</span>
+        </div>
+        <div class="instruction-step">
+          <span class="step-number">3</span>
+          <span>Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</span>
+        </div>
+      </div>
+
+      <button onclick="closeInstallModal()" style="width: 100%; margin-top: 16px; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">
         Entendido
       </button>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = '1.0.8';
+    const APP_VERSION = '1.0.9';
 
     const absoluteCoeffs = [
       { name: 'IVSd',   a: 0.29, b: 0.59, c: 0.241 },
@@ -533,7 +604,6 @@
       });
     }
 
-    /* ELIMINA EL ELEMENTO DEL DOM AL TERMINAR LA ANIMACIÓN CSS */
     function setupSplashCleanup() {
       const splash = document.getElementById('splashScreen');
       if (splash) {
@@ -701,19 +771,40 @@
       }
     }
 
+    /* DETECCIÓN DE ENTORNO WEB Y SELECCIÓN AUTOMÁTICA DE PESTAÑA EN EL MODAL */
     function detectDeviceOS() {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      
+      // Si la app NO está instalada en el teléfono (es decir, se entra desde navegador web)
       if (!isStandalone) {
         document.getElementById('installBtn').classList.remove('hidden');
       }
 
+      // Detecta el sistema operativo para dejar preseleccionada la pestaña correcta
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-        document.getElementById('iosInstructions').classList.remove('hidden');
-        document.getElementById('androidInstructions').classList.add('hidden');
+        switchOsTab('ios');
       } else {
-        document.getElementById('iosInstructions').classList.add('hidden');
-        document.getElementById('androidInstructions').classList.remove('hidden');
+        switchOsTab('android');
+      }
+    }
+
+    function switchOsTab(os) {
+      const btnIos = document.getElementById('btnTabIos');
+      const btnAndroid = document.getElementById('btnTabAndroid');
+      const iosInst = document.getElementById('iosInstructions');
+      const androidInst = document.getElementById('androidInstructions');
+
+      if (os === 'ios') {
+        btnIos.classList.add('active');
+        btnAndroid.classList.remove('active');
+        iosInst.classList.remove('hidden');
+        androidInst.classList.add('hidden');
+      } else {
+        btnAndroid.classList.add('active');
+        btnIos.classList.remove('active');
+        androidInst.classList.remove('hidden');
+        iosInst.classList.add('hidden');
       }
     }
 
