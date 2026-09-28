@@ -277,14 +277,14 @@
     }
 
     .norm-param-btn {
-      padding: 10px;
+      padding: 12px;
       border-radius: 12px;
       border: 2px solid var(--border);
       background: #fff;
       text-align: center;
       cursor: pointer;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
     }
 
@@ -422,19 +422,16 @@
       <div class="grid-params">
         <button onclick="selectNormParam('nLA')" id="btn-nLA" class="norm-param-btn active">
           <span style="font-size: 0.9rem;">nLA (Lx)</span>
-          <span style="font-size: 0.65rem; opacity: 0.7;">c = 0.309</span>
         </button>
         <button onclick="selectNormParam('nLVIDd')" id="btn-nLVIDd" class="norm-param-btn">
           <span style="font-size: 0.9rem;">nLVIDd</span>
-          <span style="font-size: 0.65rem; opacity: 0.7;">c = 0.322</span>
         </button>
         <button onclick="selectNormParam('nLVIDs')" id="btn-nLVIDs" class="norm-param-btn">
           <span style="font-size: 0.9rem;">nLVIDs</span>
-          <span style="font-size: 0.65rem; opacity: 0.7;">c = 0.346</span>
         </button>
       </div>
 
-      <div class="label-title">Medida Observada X (en cm)</div>
+      <div class="label-title">Parámetro a normalizar (en cm)</div>
       <div class="input-wrapper">
         <input type="number" id="measuredX" step="0.01" min="0" placeholder="Ej. 2.45" oninput="calculateNormalization()">
         <span class="input-unit">cm</span>
@@ -442,14 +439,14 @@
 
       <!-- CAJA DE RESULTADO -->
       <div id="normResultCard" class="result-box">
-        <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Resultado Normalizado (Y = X / W^c)</div>
+        <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Resultado Normalizado</div>
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px;">
           <div id="normValDisplay" style="font-size: 2rem; font-weight: 800; color: var(--text-muted);">--</div>
           <div id="normStatusBadge" class="status-badge" style="background: #e2e8f0; color: #475569;">Ingrese datos</div>
         </div>
-        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
-          <span>Rango Normal Esperado:</span>
-          <strong id="normRefRange" style="color: var(--text);">--</strong>
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-muted);">
+          <span id="normAuthorLabel">Rango normal esperado:</span>
+          <strong id="normRefRange" style="color: var(--text); font-size: 0.85rem;">--</strong>
         </div>
       </div>
     </section>
@@ -498,9 +495,9 @@
     ];
 
     const normalizedCoeffs = {
-      nLA:    { name: 'nLA (Lx)', c: 0.309, min: 1.19, max: 1.57 },
-      nLVIDd: { name: 'nLVIDd',   c: 0.322, min: 1.17, max: 1.63 },
-      nLVIDs: { name: 'nLVIDs',   c: 0.346, min: 0.70, max: 1.09 }
+      nLA:    { name: 'nLA (Lx)', c: 0.309, min: 1.19, max: 1.57, author: 'Visser, et al (2019)' },
+      nLVIDd: { name: 'nLVIDd',   c: 0.322, min: 1.17, max: 1.63, author: 'Esser, et al (2020)' },
+      nLVIDs: { name: 'nLVIDs',   c: 0.346, min: 0.70, max: 1.09, author: 'Esser, et al (2020)' }
     };
 
     let selectedNormKey = 'nLA';
@@ -510,6 +507,7 @@
       renderAbsoluteTable();
       setupPWA();
       detectDeviceOS();
+      calculateNormalization();
 
       setTimeout(() => {
         dismissSplash();
@@ -598,9 +596,11 @@
       const normValDisplay = document.getElementById('normValDisplay');
       const normStatusBadge = document.getElementById('normStatusBadge');
       const normRefRange = document.getElementById('normRefRange');
+      const normAuthorLabel = document.getElementById('normAuthorLabel');
 
       const coeffData = normalizedCoeffs[selectedNormKey];
       normRefRange.textContent = `${coeffData.min} - ${coeffData.max}`;
+      normAuthorLabel.textContent = `Rango normal esperado según ${coeffData.author}:`;
 
       if (isNaN(weight) || weight <= 0 || isNaN(measuredX) || measuredX <= 0) {
         normValDisplay.textContent = '--';
@@ -634,7 +634,7 @@
     function setupPWA() {
       if ('serviceWorker' in navigator) {
         const swCode = `
-          const CACHE_NAME = 'modom-vet-cache-v8';
+          const CACHE_NAME = 'modom-vet-cache-v9';
           self.addEventListener('install', e => self.skipWaiting());
           self.addEventListener('activate', e => e.waitUntil(clients.claim()));
           self.addEventListener('fetch', e => {
