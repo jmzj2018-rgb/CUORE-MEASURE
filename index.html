@@ -653,11 +653,11 @@
       { name: 'LA (Sx)', a: 0.59, b: 0.97, c: 0.345 }
     ];
 
-    // Valores de referencia fijos por Raza (en cm)
+    // Valores de referencia fijos y citas específicas por Raza
     const fixedBreedsData = {
       golden: {
         label: 'Golden Retriever',
-        author: 'Ref. Fija: Golden Retriever',
+        author: 'Morrison et al (1992)',
         ranges: {
           'IVSd': { min: 0.8, max: 1.3 },
           'LVIDd': { min: 3.7, max: 5.1 },
@@ -670,7 +670,7 @@
       },
       doberman: {
         label: 'Doberman',
-        author: 'Ref. Fija: Doberman',
+        author: 'Calvert, et al (1986)',
         ranges: {
           'IVSd': { min: 0.33, max: 0.41 },
           'LVIDd': { min: 1.48, max: 2.08 },
@@ -683,7 +683,7 @@
       },
       boxer: {
         label: 'Boxer',
-        author: 'Ref. Fija: Boxer',
+        author: 'Cunningham, et al (2008)',
         ranges: {
           'IVSd': { min: 0.36, max: 0.63 },
           'LVIDd': { min: 1.21, max: 1.9 },
@@ -809,8 +809,9 @@
         // Al cambiar a la pestaña de "Rangos Absolutos", se borran las memorias
         resetNormMemory();
       } else {
-        tabRanges.classList.add('hidden');
+        tabRanges.classList.hidden = true;
         tabNorm.classList.remove('hidden');
+        tabRanges.classList.add('hidden');
         btnNorm.classList.add('active');
         btnRanges.classList.remove('active');
 
